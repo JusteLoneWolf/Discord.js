@@ -161,7 +161,6 @@ class TextBasedChannel {
 
     let apiMessage;
 
-    //based on https://gist.github.com/Shaynlink/3982ba459c1b2bd6ef79ba323a8d04c7
 
     if (content instanceof APIMessage) {
       apiMessage = content.resolveData();
