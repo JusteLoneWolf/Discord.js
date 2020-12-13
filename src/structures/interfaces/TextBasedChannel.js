@@ -161,13 +161,7 @@ class TextBasedChannel {
 
     let apiMessage;
 
-    let messageID, channelID, guildID;
-
-    if (content.replyTo instanceof Message) {
-      messageID = content.replyTo.id;
-      channelID = content.replyTo.channel.id;
-      guildID = content.replyTo.guild.id;
-    };
+    //based on https://gist.github.com/Shaynlink/3982ba459c1b2bd6ef79ba323a8d04c7
 
     if (content instanceof APIMessage) {
       apiMessage = content.resolveData();
@@ -179,18 +173,20 @@ class TextBasedChannel {
     };
 
     const { data, files } = await apiMessage.resolveFiles();
-    if (messageID) {
-      data.message_reference = {
-        message_id: messageID,
-        channel_id: channelID,
-        guild_id: guildID,
-      };
 
-      if(!data.replyUser){
-        data.allowed_mentions = {
+    //based on https://gist.github.com/Shaynlink/3982ba459c1b2bd6ef79ba323a8d04c7
+
+    if (content.replyTo instanceof Message) {
+      Object.assign(data,{
+        message_reference:{
+          message_id: content.replyTo.id,
+          channel_id: content.replyTo.channel.id,
+          guild_id: content.replyTo.guild.id,
+        },
+        allowed_mentions: {
           replied_user: data.replyUser
         }
-      }
+      })
     };
     return this.client.api.channels[this.id].messages
       .post({ data, files })
