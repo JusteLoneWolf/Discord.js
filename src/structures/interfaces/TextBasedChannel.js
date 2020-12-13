@@ -152,14 +152,22 @@ class TextBasedChannel {
    */
   async send(content, options) {
     const User = require('../User');
+    const Message = require('../Message');
     const GuildMember = require('../GuildMember');
 
     if (this instanceof User || this instanceof GuildMember) {
-      return this.createDM().then(dm => dm.send(content, options));
-    }
+      return this.createDM((dm) => dm.send(content, options));
+    };
 
     let apiMessage;
 
+    let messageID, channelID, guildID;
+
+    if (content.replyTo instanceof Message) {
+      messageID = content.replyTo.id;
+      channelID = content.replyTo.channel.id;
+      guildID = content.replyTo.guild.id;
+    };
 
     if (content instanceof APIMessage) {
       apiMessage = content.resolveData();
@@ -167,14 +175,27 @@ class TextBasedChannel {
       apiMessage = APIMessage.create(this, content, options).resolveData();
       if (Array.isArray(apiMessage.data.content)) {
         return Promise.all(apiMessage.split().map(this.send.bind(this)));
-      }
-    }
+      };
+    };
 
     const { data, files } = await apiMessage.resolveFiles();
+    if (messageID) {
+      data.message_reference = {
+        message_id: messageID,
+        channel_id: channelID,
+        guild_id: guildID,
+      };
+
+      if(!data.replyUser){
+        data.allowed_mentions = {
+          replied_user: data.replyUser
+        }
+      }
+    };
     return this.client.api.channels[this.id].messages
       .post({ data, files })
       .then(d => this.client.actions.MessageCreate.handle(d).message);
-  }
+  };
 
   /**
    * Starts a typing indicator in the channel.

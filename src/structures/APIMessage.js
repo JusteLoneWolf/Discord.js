@@ -145,9 +145,9 @@ class APIMessage {
    */
   resolveData() {
     if (this.data) return this;
-
     const content = this.makeContent();
     const tts = Boolean(this.options.tts);
+    const replyUser = Boolean(this.options.replyUser !== false)
 
     let nonce;
     if (typeof this.options.nonce !== 'undefined') {
@@ -201,6 +201,7 @@ class APIMessage {
     this.data = {
       content,
       tts,
+      replyUser,
       nonce,
       embed: this.options.embed === null ? null : embeds[0],
       embeds,

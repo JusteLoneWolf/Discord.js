@@ -108,6 +108,12 @@ class Message extends Base {
       this.tts = null;
     }
 
+    if('replyUser' in data){
+      this.replyUser = data.replyUser
+    }else  if(typeof  this.replyUser !== 'boolean'){
+      this.replyUser = null
+    }
+
     /**
      * A random number or string used for checking message delivery
      * <warn>This is only received after the message was sent successfully, and
@@ -602,7 +608,9 @@ class Message extends Base {
     return this.channel.send(
       content instanceof APIMessage
         ? content
-        : APIMessage.transformOptions(content, options, { reply: this.member || this.author }),
+        : APIMessage.transformOptions(content, options, {
+          replyTo: this,
+        }),
     );
   }
 
